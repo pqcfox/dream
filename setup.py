@@ -7,7 +7,8 @@ with open('LICENSE') as f:
     license = f.read()
 
 setup(name='dream',
-      version='0.1.0',
+      use_scm_version=True,
+      setup_requires=['setuptools_scm'],
       description='An interactive art project using Google DeepDream for idea generation',
       long_description=readme,
       author='Chandler Watson',

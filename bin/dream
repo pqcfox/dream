@@ -1,4 +1,19 @@
 #!/usr/bin/env python
 
-import dream
-print('To be implemented!')
+"""Usage: dream calibrate
+          dream push
+          dream pull
+          dream status
+          dream (-h | --help)
+          dream --version
+"""
+
+from docopt import docopt
+from rcfile import rcfile
+
+from dream import dream, __version__
+
+if __name__ == '__main__':
+    cli_args = docopt(__doc__, version=__version__)
+    args = rcfile(__name__, cli_args)
+    dream(args)
