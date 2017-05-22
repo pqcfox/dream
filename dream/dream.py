@@ -1,3 +1,5 @@
+import boto3
+
 def dream(args):
     if args['calibrate']:
         calibrate(args)
@@ -22,4 +24,10 @@ def pull(args):
 
 
 def status(args):
-    instance_id = args['<id>']
+    ec2 = boto3.client('ec2')
+    instance_id = args['instance-id']
+    response = ec2.describe_instances(InstanceIds=[instance_id])
+    instance = response['Reservations'][0]['Instances'][0]
+    state = instance['State']['Name']
+    instance_type = instance['InstanceType']
+    print('{} ({}) is {}'.format(instance_id, instance_type, state))
