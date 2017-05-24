@@ -1,5 +1,7 @@
+import os
+import path
 import shelve
-from os.path import expanduser, join
+import tempfile
 
 import boto3
 import cv2
@@ -7,12 +9,15 @@ import cv2
 import dream.capture
 
 S3_PUSH_KEY = 'dream_push.jpg'
-S3_PULL_KEY = 'dream_pull.jpg'
+S3_PULL_KEY = 'dream_pull.gzip'
 CALIBRATION_FILE = '.dream_calib'
-CALIBRATION_PATH = join(expanduser('~'), CALIBRATION_FILE)
+CALIBRATION_PATH = os.path.join(os.path.expanduser('~'), CALIBRATION_FILE)
 NO_CONFIG_ERROR = 'Please calibrate before pushing.'
 SHOW_IMAGE_TEXT = 'Showing image. Press any key to continue.'
 ACCEPT_PUSH_QUESTION = 'Accept push?'
+
+s3 = boto3.resource('s3')
+bucket = s3.Bucket(args['bucket-name'])
 
 
 def run(args):
@@ -60,17 +65,13 @@ def push(args):
         return
 
     path = dream.capture.save_frame(flat_frame)
-    s3 = boto3.client('s3')
-    s3.upload_file(path, args['bucket-name'], S3_PUSH_KEY)
-
-    ec2 = boto3.resource('ec2')
-    instance = ec2.Instance(args['instance-id'])
+    bucket.upload_file(path, S3_PUSH_KEY)
     instance.start()
 
 
 def pull(args):
-    pass
-
+    bucket.download_file(S3_PULL_KEY, os.getcwd())
+    
 
 def status(args):
     ec2 = boto3.resource('ec2')
@@ -79,6 +80,7 @@ def status(args):
     state = instance.state['Name']
     print('instance: {} ({})'.format(instance_id, state))
     if state == 'running':
-        pass
-    else:
-        print('no process running')
+        temp = NamedTemporaryFile()
+        bucket.download_file(S3_PULL_KEY, temp.name)
+        with open(temp) as f:
+            print(temp.read())
