@@ -20,9 +20,9 @@ s3 = boto3.resource('s3')
 bucket = s3.Bucket(args['bucket-name'])
 
 
-def run(args):
+def run(args):  # TODO: make args more specific
     if args['calibrate']:
-        calibrate(args)
+        calibrate()
     elif args['push']:
         push(args)
     elif args['pull']:
