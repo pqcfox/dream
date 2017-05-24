@@ -4,11 +4,12 @@ from os.path import expanduser, join
 import boto3
 import cv2
 
-from dream.capture import get_corners, save_image
+import dream.capture
 
 S3_KEY = 'dream'
 CALIBRATION_FILE = '.dream_calib'
 CALIBRATION_PATH = join(expanduser('~'), CALIBRATION_FILE)
+NO_CONFIG_ERROR = 'Please calibrate before pushing.'
 
 
 def run(args):
@@ -23,19 +24,43 @@ def run(args):
 
 
 def calibrate(args):
-    corners = get_corners()
+    corners = dream.capture.get_corners()
     with shelve.open(CALIBRATION_PATH) as db:
         db['corners'] = corners
 
 
+def y_or_n(question):
+    while True:
+        text = '{} [Y/n] '.format(question)
+        accept = input(text).lower()
+        if accept == 'Y' or accept == '':
+            return True
+        elif accept.lower() == 'n':
+            return False
+
+
+
 def push(args):
-    if corners is None:
-        print('Please calibrate before pushing.')
-    image = grab_frame()
-    path = save_image(image)
-    s3 = boto3.client('s3')
-    s3.upload_file(path, args['bucket-name'], S3_KEY)
-    start_instance()
+    frame = dream.capture.grab_frame()
+    try:
+        with shelve.open(CALIBRATION_PATH) as db:
+            corners = db['corners']
+    except FileNotFoundException:
+        print(NO_CONFIG_ERROR)
+
+    output_size = (int(args['image-width']), 
+                   int(args['image-height']))
+    flat_frame = dream.capture.flatten(frame, corners, output_size)
+
+    print('Showing image. Press any key to continue.')
+    dream.capture.show_frame('Dream Push', flat_frame)
+    if not y_or_n('Accept push?'):
+        return
+
+    # path = dream.capture.save_image(image)
+    # s3 = boto3.client('s3')
+    # s3.upload_file(path, args['bucket-name'], S3_KEY)
+    # start_instance()
 
 
 def pull(args):

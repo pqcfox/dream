@@ -1,8 +1,9 @@
 import cv2
+import numpy as np
 
 
 CORNER_WINDOW_NAME = 'Dream Calibration'
-CORNER_NAMES = ['lower-left', 'lower-right', 'upper-left', 'upper-right']
+CORNER_NAMES = ['upper-left', 'upper-right', 'lower-left', 'lower-right']
 CORNER_FORMAT = 'Please select the {} corner.'
 CORNER_SUCCESS = 'Calibration completed.'
 
@@ -10,7 +11,7 @@ cap = cv2.VideoCapture(0)
 
 
 def get_corners():
-    _, frame = cap.read()
+    frame = grab_frame()
     cv2.namedWindow(CORNER_WINDOW_NAME)
     cv2.imshow(CORNER_WINDOW_NAME, frame)
     mouse_down = False
@@ -35,6 +36,24 @@ def get_corners():
     cv2.destroyWindow('CORNER_WINDOW_NAME') 
     print(CORNER_SUCCESS)
     return corners
+
+
+def grab_frame():
+    return cap.read()[1]
+
+
+def show_frame(name, frame):
+    cv2.imshow(name, frame)
+    cv2.waitKey(0)
+    cv2.destroyWindow(name)
+
+
+def flatten(frame, corners, output_size):
+    new_corners = [(0, 0), (output_size[0], 0), (0, output_size[1]), 
+                   (output_size[0], output_size[1])]
+    M = cv2.getPerspectiveTransform(np.float32(corners), 
+                                    np.float32(new_corners))
+    return cv2.warpPerspective(frame, M, output_size)
 
 
 def save_image():

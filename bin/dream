@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """Usage: dream calibrate
-       dream push [--instance-id <id>] [--bucket-name <name>]
+       dream push [--instance-id <id>] [--bucket-name <name>] [--image-width <width>] [--image-height <height>]
        dream pull [--instance-id <id>] [--bucket-name <name>]
        dream status [--instance-id <id>] [--bucket-name <name>]
        dream (-h | --help)
