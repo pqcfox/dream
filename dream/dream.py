@@ -11,6 +11,8 @@ S3_PULL_KEY = 'dream_pull.jpg'
 CALIBRATION_FILE = '.dream_calib'
 CALIBRATION_PATH = join(expanduser('~'), CALIBRATION_FILE)
 NO_CONFIG_ERROR = 'Please calibrate before pushing.'
+SHOW_IMAGE_TEXT = 'Showing image. Press any key to continue.'
+ACCEPT_PUSH_QUESTION = 'Accept push?'
 
 
 def run(args):
@@ -52,16 +54,18 @@ def push(args):
     output_size = (int(args['image-width']), 
                    int(args['image-height']))
     flat_frame = dream.capture.flatten(frame, corners, output_size)
-
-    print('Showing image. Press any key to continue.')
+    print(SHOW_IMAGE_TEXT)
     dream.capture.show_frame('Dream Push', flat_frame)
-    if not y_or_n('Accept push?'):
+    if not y_or_n(ACCEPT_PUSH_QUESTION):
         return
 
     path = dream.capture.save_frame(flat_frame)
     s3 = boto3.client('s3')
-    s3.upload_file(path, args['bucket-name'], S3_KEY)
-    # start_instance()
+    s3.upload_file(path, args['bucket-name'], S3_PUSH_KEY)
+
+    ec2 = boto3.resource('ec2')
+    instance = ec2.Instance(args['instance-id'])
+    instance.start()
 
 
 def pull(args):
