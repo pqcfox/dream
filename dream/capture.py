@@ -1,3 +1,6 @@
+import os
+import tempfile
+
 import cv2
 import numpy as np
 
@@ -56,5 +59,7 @@ def flatten(frame, corners, output_size):
     return cv2.warpPerspective(frame, M, output_size)
 
 
-def save_image():
-    pass
+def save_frame(frame):
+    temp = tempfile.NamedTemporaryFile(delete=False, suffix='.jpg')
+    cv2.imwrite(temp.name, frame)
+    return temp.name

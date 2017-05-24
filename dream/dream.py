@@ -6,7 +6,8 @@ import cv2
 
 import dream.capture
 
-S3_KEY = 'dream'
+S3_PUSH_KEY = 'dream_push.jpg'
+S3_PULL_KEY = 'dream_pull.jpg'
 CALIBRATION_FILE = '.dream_calib'
 CALIBRATION_PATH = join(expanduser('~'), CALIBRATION_FILE)
 NO_CONFIG_ERROR = 'Please calibrate before pushing.'
@@ -57,9 +58,9 @@ def push(args):
     if not y_or_n('Accept push?'):
         return
 
-    # path = dream.capture.save_image(image)
-    # s3 = boto3.client('s3')
-    # s3.upload_file(path, args['bucket-name'], S3_KEY)
+    path = dream.capture.save_frame(flat_frame)
+    s3 = boto3.client('s3')
+    s3.upload_file(path, args['bucket-name'], S3_KEY)
     # start_instance()
 
 
