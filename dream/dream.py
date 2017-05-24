@@ -1,10 +1,14 @@
+import shelve
+from os.path import expanduser, join
+
 import boto3
 import cv2
 
 from dream.capture import get_corners, save_image
 
 S3_KEY = 'dream'
-corners = None
+CALIBRATION_FILE = '.dream_calib'
+CALIBRATION_PATH = join(expanduser('~'), CALIBRATION_FILE)
 
 
 def run(args):
@@ -20,6 +24,8 @@ def run(args):
 
 def calibrate(args):
     corners = get_corners()
+    with shelve.open(CALIBRATION_PATH) as db:
+        db['corners'] = corners
 
 
 def push(args):
