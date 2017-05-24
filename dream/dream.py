@@ -1,6 +1,13 @@
 import boto3
+import cv2
 
-def dream(args):
+from dream.capture import get_corners, save_image
+
+S3_KEY = 'dream'
+corners = None
+
+
+def run(args):
     if args['calibrate']:
         calibrate(args)
     elif args['push']:
@@ -12,11 +19,17 @@ def dream(args):
 
 
 def calibrate(args):
-    pass
+    corners = get_corners()
 
 
 def push(args):
-    pass
+    if corners is None:
+        print('Please calibrate before pushing.')
+    image = grab_frame()
+    path = save_image(image)
+    s3 = boto3.client('s3')
+    s3.upload_file(path, args['bucket-name'], S3_KEY)
+    start_instance()
 
 
 def pull(args):
@@ -24,10 +37,12 @@ def pull(args):
 
 
 def status(args):
-    ec2 = boto3.client('ec2')
+    ec2 = boto3.resource('ec2')
     instance_id = args['instance-id']
-    response = ec2.describe_instances(InstanceIds=[instance_id])
-    instance = response['Reservations'][0]['Instances'][0]
-    state = instance['State']['Name']
-    instance_type = instance['InstanceType']
-    print('{} ({}) is {}'.format(instance_id, instance_type, state))
+    instance = ec2.Instance(instance_id)
+    state = instance.state['Name']
+    print('instance: {} ({})'.format(instance_id, state))
+    if state == 'running':
+        pass
+    else:
+        print('no process running')
