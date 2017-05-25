@@ -15,6 +15,6 @@ setup(name='dream',
       author_email='watson@facni.com',
       url='https://github.com/useanalias/dream',
       license=license,
-      packages=find_packages(exclude=('tests', 'docs')),
+      py_modules=['dream'],
       scripts=['bin/dream']
 )

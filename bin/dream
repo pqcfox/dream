@@ -9,13 +9,15 @@
 """
 
 from os.path import basename
+from pkg_resources import get_distribution
 
 from docopt import docopt
 from rcfile import rcfile
 
-from dream import run, __version__
+from dream import run
 
 if __name__ == '__main__':
-    cli_args = docopt(__doc__, version=__version__)
+    version = get_distribution('dream').version
+    cli_args = docopt(__doc__, version=version)
     args = rcfile(basename(__file__), cli_args)
     run(args)
